@@ -1,0 +1,215 @@
+# 🎯 GUIA RÁPIDO - POLIMORFISMO
+
+## Os 3 Tipos Explicados em 1 Página
+
+---
+
+## 1️⃣ SOBREPOSIÇÃO (Overriding)
+
+**Definição:** Classe filha MUDA um método da classe pai
+
+**Identificação:**
+- ✓ Mesmo nome de método
+- ✓ Classe filha herda de classe pai
+- ✓ Comportamento TOTALMENTE DIFERENTE
+
+**Fórmula:**
+```
+Pai: método X → Resultado A
+Filho: método X → Resultado B (COMPLETAMENTE DIFERENTE!)
+```
+
+**Seu Código:**
+```python
+# models.py
+class Livro(models.Model):
+    def __str__(self):  # ← Mesmo nome do pai (models.Model)
+        return self.titulo  # ← Comportamento novo!
+
+# Resultado:
+print(str(livro))  # "O Senhor dos Anéis" (não é "<Livro object (1)>")
+```
+
+---
+
+## 2️⃣ SOBRECARGA (Overloading)
+
+**Definição:** Mesmo método com DIFERENTES PARÂMETROS = COMPORTAMENTOS DIFERENTES
+
+**Identificação:**
+- ✓ Mesmo nome de método
+- ✓ DIFERENTES PARÂMETROS (quantidade/tipo)
+- ✓ Comportamento muda baseado nos parâmetros
+
+**Fórmula:**
+```
+método()           → Resultado A
+método(param1)     → Resultado B
+método(param1, param2) → Resultado C
+```
+
+**Seu Código:**
+```python
+# models.py
+class Livro(models.Model):
+    def descricao(self, incluir_edicao=False):  # ← Parâmetro opcional
+        base = f"{self.titulo} ({self.dataPublicacao})"
+        if incluir_edicao:
+            return f"{base} - Edição {self.edicao}"  # ← Comportamento A
+        return base  # ← Comportamento B
+
+# Resultado:
+print(livro.descricao())  # "O Senhor dos Anéis (1954)"
+print(livro.descricao(True))  # "O Senhor dos Anéis (1954) - Edição 1"
+```
+
+**Outro Exemplo:**
+```python
+def formatar_info(self, formato="curto"):
+    if formato == "curto":
+        return f"Livro: {self.titulo}"
+    elif formato == "longo":
+        return f"Livro: {self.titulo} | Data: {self.dataPublicacao}"
+    elif formato == "json":
+        return json.dumps({...})
+
+# Resultado:
+print(livro.formatar_info())              # Formato curto
+print(livro.formatar_info("longo"))       # Formato longo
+print(livro.formatar_info("json"))        # Formato JSON
+```
+
+---
+
+## 3️⃣ SUBTIPO (Subtyping)
+
+**Definição:** Subclasse pode ser usada ONDE a superclasse é esperada
+
+**Identificação:**
+- ✓ Classe herda de outra
+- ✓ Subclasse É UM tipo da superclasse
+- ✓ Pode substituir a superclasse em qualquer contexto
+
+**Fórmula:**
+```
+class Filho(Pai):
+    pass
+
+# Arquivo que espera Pai:
+def funcao(param: Pai):
+    param.metodo()
+
+# Pode passar Filho:
+funcao(Filho())  # ✓ Funciona! Porque Filho É UM Pai
+```
+
+**Seu Código:**
+```python
+# views.py
+class LivroViewSet(viewsets.ModelViewSet):  # ← Herda de ModelViewSet
+    queryset = Livro.objects.all()
+    serializer_class = LivroSerializer
+
+# LivroViewSet É UM ModelViewSet
+# Pode ser usado em qualquer lugar que ModelViewSet é esperado
+
+# Django internamente:
+def processar_viewset(viewset):  # Espera ModelViewSet
+    return viewset.list()
+
+# Funciona com LivroViewSet:
+processar_viewset(LivroViewSet())  # ✓ Funciona!
+```
+
+---
+
+## 📊 TABELA COMPARATIVA
+
+| Aspecto | Sobreposição | Sobrecarga | Subtipo |
+|---------|--------------|-----------|---------|
+| **Nome Igual?** | Sim | Sim | Não (relação) |
+| **Parâmetros** | Iguais | DIFERENTES | N/A |
+| **Herança?** | Sim (necessária) | Não (opcional) | Sim |
+| **O Quê Muda** | Comportamento | Comportamento conforme parâmetros | Tipo |
+| **Exemplo** | `__str__()` | `descricao()` | `LivroViewSet(ModelViewSet)` |
+
+---
+
+## 🧠 MACETE PARA LEMBRAR
+
+### SOBREPOSIÇÃO
+```
+"O filho DISCORDA do pai e muda o jeito!"
+Filho decide fazer DIFERENTE
+```
+
+### SOBRECARGA
+```
+"Um método que funciona de VÁRIAS FORMAS!"
+Mesma ação, COMPORTAMENTOS DIFERENTES conforme entrada
+```
+
+### SUBTIPO
+```
+"O filho pode SUBSTITUIR o pai em qualquer lugar!"
+"LivroViewSet no lugar de ModelViewSet"
+```
+
+---
+
+## 🎯 TESTE RÁPIDO
+
+Para cada caso, identifique qual tipo:
+
+```python
+# Caso 1: ✓ Qual tipo?
+class Animal:
+    def fazer_som(self):
+        pass
+
+class Cachorro(Animal):
+    def fazer_som(self):
+        return "Au au"
+
+# Resposta: SOBREPOSIÇÃO
+
+
+# Caso 2: ✓ Qual tipo?
+class Calculadora:
+    def somar(self, a, b=0):
+        return a + b
+
+calc.somar(5)      # 5
+calc.somar(5, 3)   # 8
+
+# Resposta: SOBRECARGA
+
+
+# Caso 3: ✓ Qual tipo?
+class Funcionario:
+    pass
+
+class Gerente(Funcionario):
+    pass
+
+def processar(func: Funcionario):
+    # func.trabalhar()
+    pass
+
+processar(Gerente())  # Funciona!
+
+# Resposta: SUBTIPO
+```
+
+---
+
+## 📚 LEIA TAMBÉM
+
+- `POLIMORFISMO_3_TIPOS.md` - Guia completo
+- `EXEMPLOS_PRATICOS_POO.md` - Exemplos práticos
+- `api/models.py` - Código real do seu projeto
+- `api/views.py` - Código real do seu projeto
+
+---
+
+**Parabéns! Agora você domina os 3 tipos de polimorfismo!** 🏆

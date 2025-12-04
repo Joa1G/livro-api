@@ -1,0 +1,281 @@
+╔════════════════════════════════════════════════════════════════════════════════════════════════════╗
+║                          MAPA MENTAL - CONCEITOS DE POO NA SUA API                               ║
+╚════════════════════════════════════════════════════════════════════════════════════════════════════╝
+
+
+                                    ESTRUTURA DA API
+                                    ════════════════
+
+                                   ┌─────────────────┐
+                                   │   Usuário       │
+                                   │ (faz requisição)│
+                                   └────────┬────────┘
+                                            │
+                                   GET /api/livros/
+                                            │
+                   ┌───────────────────────┼───────────────────────┐
+                   │                       │                       │
+                   ▼                       ▼                       ▼
+           ┌──────────────┐         ┌──────────────┐       ┌──────────────┐
+           │ livro_api/   │         │  api/        │       │  banco de    │
+           │  urls.py     │         │  urls.py     │       │  dados       │
+           │              │         │              │       │              │
+           │ ┌──────────┐ │         │ ┌──────────┐ │       └──────────────┘
+           │ │  Define  │ │         │ │ Registra │ │              │
+           │ │  /api/   │ │────────▶│ │ /livros/ │ │───────┐      │
+           │ │         │ │         │ │ no router│ │       │      │
+           │ └──────────┘ │         │ └──────────┘ │       │      │
+           └──────────────┘         └──────────────┘       │      │
+                                                            ▼      │
+                                                    ┌──────────────┐
+                                                    │   views.py   │
+                                                    │ (LivroViewSet)
+                                                    │              │
+                                                    │ ┌──────────┐ │
+                                                    │ │ Recebe   │ │
+                                                    │ │ requisição
+                                                    │ └────┬─────┘ │
+                                                    └─────┼────────┘
+                                                          │
+                                                    ┌─────▼─────────┐
+                                                    │serializers.py │
+                                                    │(LivroSerializer)
+                                                    │               │
+                                                    │┌──────────┐   │
+                                                    ││ Converte ││   │
+                                                    ││ JSON↔Obj ││   │
+                                                    │└────┬─────┘   │
+                                                    └─────┼─────────┘
+                                                          │
+                                                    ┌─────▼─────────┐
+                                                    │ models.py     │
+                                                    │ (Livro)       │
+                                                    │               │
+                                                    │ ┌──────────┐  │
+                                                    │ │  Salva   │  │
+                                                    │ │ no banco  │  │
+                                                    │ └────┬─────┘  │
+                                                    └─────┼────────┘
+                                                          │
+                                                          ▼
+                                                   db.sqlite3 📦
+
+
+═══════════════════════════════════════════════════════════════════════════════════════════════════
+
+
+                            CONCEITOS POO POR ARQUIVO
+                            ════════════════════════
+
+
+┌─────────────────────────────────────────────────────────────────────────────────────────────┐
+│ 📄 models.py                                                                               │
+├─────────────────────────────────────────────────────────────────────────────────────────────┤
+│                                                                                             │
+│  class Livro(models.Model)                                                                 │
+│  ├── CLASSE ✓                                                                             │
+│  ├── HERANÇA ✓ (de models.Model)                                                         │
+│  ├── SUPERCLASSE ✓ (models.Model é o pai)                                                │
+│  ├── SUBCLASSE ✓ (Livro é o filho)                                                       │
+│  │                                                                                         │
+│  ├── ATRIBUTOS ✓                                                                         │
+│  │   ├── titulo                                                                          │
+│  │   ├── dataPublicacao                                                                  │
+│  │   └── edicao                                                                          │
+│  │                                                                                         │
+│  ├── MÉTODOS ✓                                                                           │
+│  │   └── __str__() [POLIMORFISMO - Sobreposição]                                        │
+│  │                                                                                         │
+│  ├── ENCAPSULAMENTO ✓ (dados protegidos)                                                 │
+│  ├── ABSTRAÇÃO ✓ (CharField esconde SQL)                                                 │
+│  └── COESÃO ALTA ✓ (só cuida de Livro)                                                  │
+│                                                                                             │
+└─────────────────────────────────────────────────────────────────────────────────────────────┘
+
+
+┌─────────────────────────────────────────────────────────────────────────────────────────────┐
+│ 📄 serializers.py                                                                          │
+├─────────────────────────────────────────────────────────────────────────────────────────────┤
+│                                                                                             │
+│  class LivroSerializer(serializers.ModelSerializer)                                       │
+│  ├── CLASSE ✓                                                                             │
+│  ├── HERANÇA ✓ (de ModelSerializer)                                                      │
+│  ├── SUPERCLASSE ✓ (ModelSerializer é o pai)                                            │
+│  ├── SUBCLASSE ✓ (LivroSerializer é o filho)                                            │
+│  │                                                                                         │
+│  ├── ENCAPSULAMENTO ✓                                                                    │
+│  │   └── Classe Meta encapsula configuração                                              │
+│  │                                                                                         │
+│  ├── ACOPLAMENTO NECESSÁRIO ✓                                                            │
+│  │   └── Depende de Livro (precisa saber qual modelo converter)                          │
+│  │                                                                                         │
+│  └── SOLID - SRP ✓ (responsabilidade única: converter JSON ↔ Livro)                      │
+│                                                                                             │
+└─────────────────────────────────────────────────────────────────────────────────────────────┘
+
+
+┌─────────────────────────────────────────────────────────────────────────────────────────────┐
+│ 📄 views.py                                                                                │
+├─────────────────────────────────────────────────────────────────────────────────────────────┤
+│                                                                                             │
+│  class LivroViewSet(viewsets.ModelViewSet)                                                │
+│  ├── CLASSE ✓                                                                             │
+│  ├── HERANÇA MÚLTIPLA ✓ (herda de vários Mixins)                                         │
+│  ├── SUPERCLASSE ✓ (ModelViewSet)                                                        │
+│  ├── SUBCLASSE ✓ (LivroViewSet)                                                          │
+│  │                                                                                         │
+│  ├── MIXINS ✓ (CreateModelMixin, RetrieveModelMixin, etc)                               │
+│  ├── INTERFACE/CONTRATO ✓ (implementa contrato de ModelViewSet)                          │
+│  │                                                                                         │
+│  ├── ATRIBUTOS DE CLASSE ✓                                                               │
+│  │   ├── queryset = Livro.objects.all()                                                 │
+│  │   └── serializer_class = LivroSerializer                                             │
+│  │                                                                                         │
+│  ├── POLIMORFISMO DE SUBTIPO ✓ (LivroViewSet é um ModelViewSet)                         │
+│  ├── DELEGAÇÃO ✓ (delega para Serializer e Model)                                        │
+│  ├── ABSTRAÇÃO ✓ (esconde complexidade de HTTP)                                          │
+│  └── SOLID - SRP ✓ (responsabilidade única: coordenar requisições HTTP)                  │
+│                                                                                             │
+└─────────────────────────────────────────────────────────────────────────────────────────────┘
+
+
+┌─────────────────────────────────────────────────────────────────────────────────────────────┐
+│ 📄 urls.py                                                                                 │
+├─────────────────────────────────────────────────────────────────────────────────────────────┤
+│                                                                                             │
+│  router = DefaultRouter()                                                                 │
+│  ├── CLASSE ✓ (DefaultRouter é uma classe)                                               │
+│  ├── OBJETO/INSTÂNCIA ✓ (router é um objeto)                                             │
+│  │                                                                                         │
+│  ├── DELEGAÇÃO ✓ (router delega criação de URLs)                                         │
+│  ├── POLIMORFISMO ✓ (LivroViewSet é um ModelViewSet)                                     │
+│  ├── ABSTRAÇÃO ✓ (esconde complexidade de criar URLs)                                    │
+│  ├── MODULARIDADE ✓ (arquivo independente e bem organizado)                              │
+│  └── SOLID - SRP ✓ (responsabilidade única: definir rotas)                               │
+│                                                                                             │
+└─────────────────────────────────────────────────────────────────────────────────────────────┘
+
+
+═══════════════════════════════════════════════════════════════════════════════════════════════
+
+
+                            RELAÇÕES ENTRE CONCEITOS
+                            ═══════════════════════
+
+
+                              CLASSE
+                                ▲
+                                │
+                    ┌───────────┴────────────┐
+                    │                        │
+                HERANÇA              POLIMORFISMO
+                    ▲                        ▲
+                    │                        │
+        ┌───────────┼───────────┐    ┌──────┴──────┐
+        │           │           │    │             │
+    SUPERCLASSE  SUBCLASSE  OBJETO  SOBRECARGA  SOBREPOSIÇÃO
+                    │
+                    ▼
+            ENCAPSULAMENTO
+                    │
+        ┌───────────┴───────────┐
+        │                       │
+      ATRIBUTOS             MÉTODOS
+        │                       │
+    Dados protegidos       Ações do objeto
+
+
+                          PRINCÍPIOS SOLID
+                          ═════════════════
+
+    Single Responsibility → Cada classe UMA responsabilidade
+    Open/Closed           → Aberta para extensão, fechada para modificação
+    Liskov Substitution   → Subclasse pode substituir superclasse
+    Interface Segregation → Muitas interfaces específicas
+    Dependency Inversion  → Depender de abstrações, não de concretos
+
+
+═══════════════════════════════════════════════════════════════════════════════════════════════
+
+
+                      FLUXO DE DADOS (POST novo livro)
+                      ════════════════════════════════
+
+    1. Cliente
+       └─ Envia: {"titulo": "Python", "dataPublicacao": "2024", "edicao": "1"}
+          │
+          └─ JSON (texto)
+             │
+    2. urls.py (livro_api)
+       └─ "/api/livros/" → api/urls.py
+             │
+    3. urls.py (api)
+       └─ "/livros/" → DefaultRouter → LivroViewSet
+             │
+    4. views.py (LivroViewSet)
+       └─ Recebe dados JSON
+          │
+          └─ Chama serializer_class (LivroSerializer)
+             │
+    5. serializers.py (LivroSerializer)
+       └─ Converte JSON → Objeto Python
+          │
+          └─ Valida dados
+             │
+             └─ Retorna Objeto Livro
+                │
+    6. models.py (Livro)
+       └─ Objeto é salvo no banco
+          │
+          └─ Retorna Objeto salvo (com ID)
+             │
+    7. serializers.py (LivroSerializer)
+       └─ Converte Objeto Python → JSON
+          │
+          └─ Retorna JSON
+             │
+    8. views.py (LivroViewSet)
+       └─ Retorna resposta HTTP
+          │
+          └─ 201 Created
+             │
+             └─ Corpo: {"id": 1, "titulo": "Python", ...}
+                │
+    9. Cliente
+       └─ Recebe JSON com livro criado
+
+
+═══════════════════════════════════════════════════════════════════════════════════════════════
+
+
+                            TABELA DE CONCEITOS
+                            ══════════════════
+
+┌──────────────────────────┬──────────────┬──────────────────────────────┐
+│ CONCEITO                 │ ONDE ESTÁ    │ O QUE FAZ                    │
+├──────────────────────────┼──────────────┼──────────────────────────────┤
+│ CLASSE                   │ Todos        │ Molde para objetos           │
+│ OBJETO/INSTÂNCIA         │ urls.py      │ Cópia pronta da classe       │
+│ ATRIBUTOS                │ models.py    │ Dados do objeto              │
+│ MÉTODOS                  │ models.py    │ Ações do objeto              │
+│ HERANÇA                  │ Todos        │ Receber poderes do pai       │
+│ SUPERCLASSE              │ Todos        │ Classe pai                   │
+│ SUBCLASSE                │ Todos        │ Classe filha                 │
+│ POLIMORFISMO             │ models.py    │ Mesma ação, comportamentos   │
+│ SOBREPOSIÇÃO             │ models.py    │ Mudar método do pai          │
+│ ENCAPSULAMENTO           │ models.py    │ Proteger dados               │
+│ ABSTRAÇÃO                │ Todos        │ Esconder complexidade        │
+│ COESÃO ALTA              │ Todos        │ Cada um cuida do seu         │
+│ ACOPLAMENTO              │ serializers  │ Dependência entre classes    │
+│ DELEGAÇÃO                │ views.py     │ Passar responsabilidade      │
+│ INTERFACE/CONTRATO       │ views.py     │ Promessa de métodos          │
+│ HERANÇA MÚLTIPLA         │ views.py     │ Herdar de vários             │
+│ SOLID - SRP              │ Todos        │ Uma responsabilidade cada    │
+└──────────────────────────┴──────────────┴──────────────────────────────┘
+
+
+═══════════════════════════════════════════════════════════════════════════════════════════════
+
+                            FIM DO MAPA MENTAL
+                            
+Leia os comentários detalhados em cada arquivo para aprofundar nos conceitos!
